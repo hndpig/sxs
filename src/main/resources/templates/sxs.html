@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <title>实习生</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <script src="/static/js/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/static/css/scs.css">
+    <script type="text/javascript" src="/static/js/Vue/vue.js"></script>
+    <script src="/static/js/axios/axios.min.js"></script>
+</head>
+<body>
+<div class="container " id="app">
+
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-xs-12">
+            <h2 style="text-align: center">欢迎来到实习生管理系统</h2>
+        </div>
+    </div>
+
+    <!--条件查询搜索-->
+    <div class="row">
+        <div class="col-xs-12">
+            <form id="findForm" class="form-inline">
+                <div class="row" style="margin-bottom:20px ">
+                    <div class="col-xs-5 col-xs-offset-1">
+
+                        <table class="row" style=" width: 100%">
+                            <tr>
+                                <td class="col-xs-4 " style="text-align: right"><label for="sId">实习生编号：</label></td>
+                                <td class="col-xs-8"><input type="text" class="form-control" id="sId"
+                                                            placeholder="实习生编号" name="sId"></td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    <div class="col-xs-5 col-xs-pull-1">
+
+                        <table class="row" style=" width: 100%">
+                            <tr>
+                                <td class="col-xs-4 " style="text-align: right"><label for="sEntryTime">入职时间：</label>
+                                </td>
+                                <td class="col-xs-8"><input type="date" class="form-control" id="sEntryTime"
+                                                            name="sEntryTime"></td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom:20px ">
+
+                    <div class="col-xs-5 col-xs-offset-1">
+                        <table class="row" style=" width: 100%">
+                            <tr>
+                                <td class="col-xs-4 " style="text-align: right"><label for="sGroup">所在项目组：</label></td>
+                                <td class="col-xs-8"><input type="text" class="form-control" id="sGroup"
+                                                            placeholder="请输入项目组" name="sGroup"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-xs-5 col-xs-pull-1">
+                        <table class="row" style=" width: 100%">
+                            <tr>
+                                <td class="col-xs-4 " style="text-align: right"><label for="sStatus">在职状态：</label></td>
+                                <td class="col-xs-8">
+                                    <select class="form-control" name="sStatus" id="sStatus">
+                                        <option value="1">在职</option>
+                                        <option value="0">离职</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-offset-5 col-xs-2 ">
+                        <a class="btn btn-success" @click="getStudent()">查询</a>
+                    </div>
+                    <div class=" col-xs-2 ">
+                        <a class="btn btn-success" data-toggle="modal" data-target="#addModal">添加</a>
+
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!--分页显示-->
+    <div class="row" style="margin-top: 20px">
+        <table class="table table-hover" id="t_table">
+            <tr>
+                <th>实习生编号</th>
+                <th>性别</th>
+                <th>姓名</th>
+                <th>年龄</th>
+                <th>所在学校</th>
+                <th>学生学号</th>
+                <th>电话</th>
+                <th>在职状态</th>
+                <th>所在项目组</th>
+                <th>入职时间</th>
+                <th colspan="2" class="text-center"> 操作</th>
+            </tr>
+
+            <tr id="t_tr" v-for="(item,index) in objList">
+                <td>{{item.sId}}</td>
+                <td>{{item.sSex}}</td>
+                <td>{{item.sName}}</td>
+                <td>{{item.age}}</td>
+                <td>{{item.sSchool}}</td>
+                <td>{{item.sNumber}}</td>
+                <td>{{item.sPhone}}</td>
+                <td>{{item.sStatus}}</td>
+                <td>{{item.sEntryTime}}</td>
+                <td>{{item.sGroup}}</td>
+                <td colspan="2" class="text-center"><!--data-toggle="modal"  data-target="#myModal"-->
+                    <button class="btn btn-xs btn-primary" @click="openMyModal(index)">修改</button>
+                    &nbsp;&nbsp;&nbsp;
+                    <button class="btn btn-xs btn-danger" @click="removeStudent(index)">删除</button>
+                </td>
+            </tr>
+
+
+        </table>
+
+    </div>
+
+
+    <!--分页条-->
+    <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+
+            <nav aria-label="">
+                <ul class="pagination">
+                    <li :class="{hidden:!barObj.hasPreviousPage}" @click="upDateStudentList(barObj.prePage)"><a>上一页</a>
+                    </li>
+                    <li v-for="bar in barObj.navigatepageNums" @click="upDateStudentList(bar)"
+                        :class="{active: barObj.pageNum==bar }"><a href="#">{{bar}}</a></li>
+                    <li :class="{hidden:!barObj.hasNextPage}" @click="upDateStudentList(barObj.nextPage)"><a href="#">下一页</a>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+
+    <!-- 添加实习生-->
+    <div class="modal fade" tabindex="-1" role="dialog" id="addModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">添加实习生</h4>
+                </div>
+                <div class="modal-body">                    <!-- form-->
+                    <form class="form-horizontal" id="addForm">
+                        <div class="form-group">
+                            <label for="addSId"
+                                   class="col-sm-2 control-label col-sm-offset-2">编号</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="addSId" name="sId" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSName" class="col-sm-2 control-label col-sm-offset-2">姓名</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="addSName" placeholder="姓名"
+                                       name="sName">
+                                <span class="help-block" style="font-size: 12px"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addAge"
+                                   class="col-sm-2 control-label col-sm-offset-2">年龄</label>
+                            <div class="col-sm-5">
+                                <input type="number" class="form-control col-sm-8" id="addAge" placeholder="年龄"
+                                       name="sAge">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSSex"
+                                   class="col-sm-2 control-label col-sm-offset-2">性别</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="addSSex" placeholder="性别"
+                                       name="sSex">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSPhone" class="col-sm-2 control-label col-sm-offset-2">手机号码</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="addSPhone" placeholder="手机号码"
+                                       name="sPhone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSSchool" class="col-sm-2 control-label col-sm-offset-2">学生学校</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="addSSchool"
+                                       placeholder="college" name="sSchool">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSNumber" class="col-sm-2 control-label col-sm-offset-2">学生学号</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="addSNumber"
+                                       placeholder="college" name="sNumber">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSEntryTime"
+                                   class="col-sm-2 control-label col-sm-offset-2">入职时间</label>
+                            <div class="col-sm-5">
+                                <input type="date" class="form-control col-sm-8" id="addSEntryTime" name="sEntrytime">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSWorkingTime"
+                                   class="col-sm-2 control-label col-sm-offset-2">实习时长</label>
+                            <div class="col-sm-5">
+                                <input type="number" class="form-control col-sm-8" id="addSWorkingTime"
+                                       name="sWorkingtime">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSStatus" class="col-sm-2 control-label col-sm-offset-2">入职状态</label>
+                            <div class="col-sm-5">
+                                <input type="number" class="form-control col-sm-8" id="addSStatus"
+                                       placeholder="sStatus" name="sStatus">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addSGroup" class="col-sm-2 control-label col-sm-offset-2">所在部门</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="addSGroup"
+                                       placeholder="sGroup" name="sGroup">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-2 col-sm-offset-4">
+                                <a class="btn btn-success" id="addBtn" @click="addStudent">提交</a>
+                            </div>
+                            <div class="col-sm-2 ">
+                                <button type="reset" class="btn btn-default">重置</button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+    <!--实习生编辑-->
+    <div class="modal fade" tabindex="-1" role="dialog" id="myModal">
+
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">编辑实习生信息</h4>
+                </div>
+                <div class="modal-body">                    <!-- form-->
+                    <form class="form-horizontal" id="editForm">
+
+                        <div class="form-group">
+                            <label for="editSId"
+                                   class="col-sm-2 control-label col-sm-offset-2">编号</label>
+                            <div class="col-sm-5">
+                                <!--sId,sSex,sName,age,sSchool,sNumber,sPhone,sStatus,sEntryTime,sWorkingTime,sGroup-->
+                                <input type="text" class="form-control col-sm-8" id="editSId" name="sId" value="8">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editSName" class="col-sm-2 control-label col-sm-offset-2">姓名</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="editSName" placeholder="姓名"
+                                       name="sName">
+                                <span id="helpBlock" class="help-block" style="font-size: 12px"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAge"
+                                   class="col-sm-2 control-label col-sm-offset-2">年龄</label>
+                            <div class="col-sm-5">
+                                <input type="number" class="form-control col-sm-8" id="editAge" placeholder="job"
+                                       name="age">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSSex"
+                                   class="col-sm-2 control-label col-sm-offset-2">性别</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="editSSex" placeholder="性别"
+                                       name="sSex">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="EditSPhone" class="col-sm-2 control-label col-sm-offset-2">手机号码</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="EditSPhone" placeholder="手机号码"
+                                       name="sPhone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSSchool" class="col-sm-2 control-label col-sm-offset-2">学生学校</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="editSSchool"
+                                       placeholder="college" name="sSchool">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSEntryTime"
+                                   class="col-sm-2 control-label col-sm-offset-2">入职时间</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control col-sm-8" id="editSEntryTime" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSStatus" class="col-sm-2 control-label col-sm-offset-2">入职状态</label>
+                            <div class="col-sm-5">
+                                <input type="number" class="form-control col-sm-8" id="editSStatus"
+                                       placeholder="sStatus" name="sStatus">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSGroup" class="col-sm-2 control-label col-sm-offset-2">所在部门</label>
+                            <div class="col-sm-5">
+                                <input type="number" class="form-control col-sm-8" id="editSGroup"
+                                       placeholder="sGroup" name="sGroup">
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <div class="col-sm-2 col-sm-offset-4">
+                                <a class="btn btn-success" id="editBtn">提交</a>
+                            </div>
+                            <div class="col-sm-2 ">
+                                <button type="reset" class="btn btn-default">重置</button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+</div>
+
+</body>
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            objList: [],
+            barObj: {},
+            sxsObj: {},
+            num: 1
+        },
+        methods: {
+            /*创建实习生对象*/
+            createSxs: function (sId, sSex, sName, age, sSchool, sNumber, sPhone, sStatus, sEntryTime, sWorkingTime, sGroup) {
+                var obj = new Object;
+                obj.sId = sId;
+                obj.sSex = sSex;
+                obj.sName = sName;
+                obj.age = age;
+                obj.sSchool = sSchool;
+                obj.sNumber = sNumber;
+                obj.sPhone = sPhone;
+                obj.sStatus = sStatus;
+                obj.sEntryTime = sEntryTime;
+                obj.sWorkingTime = sWorkingTime;
+                obj.sGroup = sGroup;
+                return obj;
+            },
+            /*创建分页条对象*/
+            creatPageBar: function (total, pageNum, prePage, nextPage, hasPreviousPage, hasNextPage, navigatepageNums, lastPage, pages) {
+                var pageObj = new Object;
+                pageObj.total = total;
+                pageObj.pageNum = pageNum;
+                pageObj.prePage = prePage;
+                pageObj.nextPage = nextPage;
+                pageObj.hasPreviousPage = hasPreviousPage;
+                pageObj.hasNextPage = hasNextPage;
+                pageObj.navigatepageNums = navigatepageNums;
+                pageObj.lastPage = lastPage;
+                pageObj.pages = pages;
+                return pageObj;
+
+            },
+            /*打开编辑模态框*/
+            openMyModal: function (val) {
+                console.log(val)
+                $('#myModal').modal('toggle')
+                this.sxsObj = this.objList(val);
+            },
+            /*调用条件查询接口，获取条件查询的信息*/
+            getStudent: function () {
+
+                /*查询表单的信息*/
+                var form_values = $("#findForm").serialize();
+
+                var data = null;
+                /*ajax 请求 查询信息*/
+                $.ajax({
+                    type: 'POST',
+                    url: "/test2",
+                    data: form_values,
+                    success: function (respone) {
+                        console.log(respone)
+                        if (respone.status == 200) {
+
+                            data = respone.data;
+                        } else {
+                            alter("无记录")
+                        }
+                    }
+
+                });
+                if (data != null) {
+                    /*渲染数据*/
+                    this.renderData(data);
+                } else {
+                    console.log(5555)
+                }
+
+            }
+            ,
+            /*添加实习生 调用添加实习生接口*/
+            addStudent: function () {
+                console.log("进入提交实习生的方法")
+
+                /*添加表单的信息*/
+                var form_values = $("#addForm").serialize();
+                console.log("5555555555555555555555555555555555555555")
+                console.log(form_values)
+                var that = this;
+                axios.post("/add/", form_values).then(function (respone) {
+                    console.log(respone.data.status)
+
+                    if (respone.data.code == 200) {
+                        alert("添加成功");
+                        $("#addModal").modal({backdrop: 'static', keyboard: false});
+                        $("#addModal").modal("hide")
+                        that.upDateStudentList(9999);
+                    } else {
+                        alert("添加失败")
+                    }
+
+                })
+
+            },
+            /*删除实习生，调用删除实习生接口*/
+            removeStudent: function (val) {
+                var that = this.objList;
+               var key =  this.objList[val].sId;
+                axios.get("/remove/"+key).then(function (value) {
+                    console.log(value)
+                    if (value.data.code == 200) {
+                        alert("删除成功");
+                        that.splice(val, 1)
+                    } else {
+                        alert("删除失败")
+                    }
+                })
+            },
+            /*修改实习生。不做*/
+            modifyStudent: function (val) {
+                var form_values = $("#editForm").serialize();
+                axios.post("/test2/", form_values).then(function (respone) {
+                    console.log(respone.data.status)
+                    if (respone.data.code == 200) {
+                        alert("修改成功");
+                        $("#myModal").modal({backdrop: 'static', keyboard: false});
+                        $("#myModal").modal("hide")
+                    } else {
+                        alter("修改失败")
+                    }
+
+                })
+
+            },
+            /*调用分页查询的接口 获取分页数据  jq ajax 同步提交  参数pn 查询第几页的信息*/
+            getMsg: function (pn) {
+                var data1=null;
+                $.ajax({
+                    async: false,
+                    url: "/getAll/" + pn,
+                    success: function (data) {
+                        console.log(data)
+                        data1 = data
+                    }
+                });
+
+
+                return data1;
+            },
+            /*更新页面的数据  参数 pn 页码数   更新第几页的信息*/
+            upDateStudentList: function (pn) {
+                console.log(pn)
+
+                var pageNum = pn != null ? pn : 0;
+                /* 获取 第pn页的数据*/
+                var data = this.getMsg(pn);
+
+                this.objList.splice(0, this.objList.length);
+
+                            /*渲染数据*/
+                this.renderData(data);
+                /*var obj = this.createSxs("sId"+i,"sSex1"+i,"sName"+i,"age"+i,"sSchool"+i,"sNumber"+i,"sPhone"+i,"sStatus"+i,"sEntryTime"+i,"sWorkingTime"+i,"sGroup"+i )
+                this.objList.push(obj)
+*/
+
+            },
+            /*渲染页面数据函数 参数data 要渲染的数据 从getMsg方法中得到 或者getStudent方法中得到*/
+            renderData: function (data) {
+                var sxsList = data.extend.pageInfo.list;
+                console.log(sxsList)
+                /*创建对象*/
+                var barObj = this.creatPageBar(data.extend.pageInfo.total, data.extend.pageInfo.pageNum, data.extend.pageInfo.prePage, data.extend.pageInfo.nextPage, data.extend.pageInfo.hasPreviousPage, data.extend.pageInfo.hasNextPage, data.extend.pageInfo.navigatepageNums, data.extend.pageInfo.lastPage, data.extend.pageInfo.pages);
+                this.objList.length = 0;
+                this.barObj = null;
+                /*渲染数据 将数据添加到objList数组中*/
+                for (var i in sxsList) {
+                    /*   sId,sSex,sName,age,sSchool,sNumber,sPhone,sStatus,sEntryTime,sWorkingTime,sGroup*/
+                    var obj = this.createSxs(sxsList[i].sId, sxsList[i].sSex, sxsList[i].sName, sxsList[i].sAge, sxsList[i].sSchool, sxsList[i].sNumber, sxsList[i].sPhone, sxsList[i].sStatus, sxsList[i].sEntrytime, sxsList[i].sWorkingttime, sxsList[i].sGroup)
+
+                    this.objList.push(obj);
+                }
+                /*渲染分页条*/
+                console.log("+++++++++88888888888888888++++++")
+                console.log(barObj)
+                this.barObj = barObj;
+            }
+
+
+        },
+        created: function () {
+            /*进入首页默认调用查询第一的方法*/
+            this.upDateStudentList(1);
+        }
+
+
+    })
+</script>
+</html>
