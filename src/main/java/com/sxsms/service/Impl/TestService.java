@@ -32,4 +32,9 @@ public class TestService implements ITestService {
     public int addStu(StuInfo stu) {
         return dao.insert(stu);
     }
+
+    @Override
+    public List<StuInfo> getStuByFactors(StuInfo stu) {
+        return dao.getStuByFactors(stu);
+    }
 }

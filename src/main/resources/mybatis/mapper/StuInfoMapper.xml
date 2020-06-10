@@ -307,4 +307,23 @@
   <select id="getAll" resultType="com.sxsms.bean.StuInfo">
     select  * from stu_info
   </select>
+<select id ="getStuByFactors" parameterType="com.sxsms.bean.StuInfo" resultType="com.sxsms.bean.StuInfo">
+  select * from stu_info
+    <where>
+        <if test="sId != null ">
+             s_id = #{sId}
+        </if>
+        <if test="sEntrytime != null">
+          and   s_entryTime = #{sEntrytime}
+        </if>
+        <if test='sGroup !=""'>
+          and s_group =#{sGroup}
+        </if>
+        <if test="sStatus != null">
+           and s_status = #{sStatus}
+        </if>
+    </where>
+
+</select>
+
 </mapper>

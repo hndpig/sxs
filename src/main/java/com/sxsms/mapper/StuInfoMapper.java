@@ -31,4 +31,5 @@ public interface StuInfoMapper {
 
     int updateByPrimaryKey(StuInfo record);
     List<StuInfo> getAll();
+    List<StuInfo> getStuByFactors(StuInfo stu);
 }

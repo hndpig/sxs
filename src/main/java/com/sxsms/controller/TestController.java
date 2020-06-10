@@ -60,4 +60,13 @@ public String index(){
         else
             return Msg.fail();
     }
+    @RequestMapping("getStu4Fac")
+    @ResponseBody
+    public Msg getStuByFactors(StuInfo stu) {
+        List<StuInfo> stus = service.getStuByFactors(stu);
+        PageInfo<StuInfo> pageInfo =new PageInfo<>(stus);
+
+        return Msg.success().add("pageInfo" ,pageInfo);
+
+    }
 }

@@ -29,8 +29,8 @@
                         <table class="row" style=" width: 100%">
                             <tr>
                                 <td class="col-xs-4 " style="text-align: right"><label for="sId">实习生编号：</label></td>
-                                <td class="col-xs-8"><input type="text" class="form-control" id="sId"
-                                                            placeholder="实习生编号" name="sId"></td>
+                                <td class="col-xs-8">
+                                    <input type="text" class="form-control" id="sId" placeholder="实习生编号" name="sId" v-model="sId"></td>
                             </tr>
                         </table>
 
@@ -41,8 +41,9 @@
                             <tr>
                                 <td class="col-xs-4 " style="text-align: right"><label for="sEntryTime">入职时间：</label>
                                 </td>
-                                <td class="col-xs-8"><input type="date" class="form-control" id="sEntryTime"
-                                                            name="sEntryTime"></td>
+                                <td class="col-xs-8">
+                                    <input type="date" class="form-control" id="sEntryTime" v-model="sEntryTime"name="sEntryTime">
+                                </td>
                             </tr>
                         </table>
 
@@ -54,8 +55,9 @@
                         <table class="row" style=" width: 100%">
                             <tr>
                                 <td class="col-xs-4 " style="text-align: right"><label for="sGroup">所在项目组：</label></td>
-                                <td class="col-xs-8"><input type="text" class="form-control" id="sGroup"
-                                                            placeholder="请输入项目组" name="sGroup"></td>
+                                <td class="col-xs-8">
+                                    <input type="text" class="form-control" id="sGroup" v-model="sGroup" placeholder="请输入项目组" name="sGroup">
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -65,8 +67,8 @@
                                 <td class="col-xs-4 " style="text-align: right"><label for="sStatus">在职状态：</label></td>
                                 <td class="col-xs-8">
                                     <select class="form-control" name="sStatus" id="sStatus">
-                                        <option value="1">在职</option>
-                                        <option value="0">离职</option>
+                                        <option value="0">在职</option>
+                                        <option value="1">离职</option>
                                     </select>
                                 </td>
                             </tr>
@@ -114,8 +116,9 @@
                 <td>{{item.sNumber}}</td>
                 <td>{{item.sPhone}}</td>
                 <td>{{item.sStatus}}</td>
-                <td>{{item.sEntryTime}}</td>
                 <td>{{item.sGroup}}</td>
+                <td>{{item.sEntryTime}}</td>
+
                 <td colspan="2" class="text-center"><!--data-toggle="modal"  data-target="#myModal"-->
                     <button class="btn btn-xs btn-primary" @click="openMyModal(index)">修改</button>
                     &nbsp;&nbsp;&nbsp;
@@ -377,7 +380,10 @@
             objList: [],
             barObj: {},
             sxsObj: {},
-            num: 1
+            sId:"",
+            sEntryTime:"",
+            sGroup:""
+
         },
         methods: {
             /*创建实习生对象*/
@@ -422,28 +428,33 @@
 
                 /*查询表单的信息*/
                 var form_values = $("#findForm").serialize();
-
+                console.log(this.sId+this.sGroup+this.sEntryTime)
                 var data = null;
                 /*ajax 请求 查询信息*/
                 $.ajax({
                     type: 'POST',
-                    url: "/test2",
+                    async:false,
+                    url: "/getStu4Fac",
                     data: form_values,
                     success: function (respone) {
                         console.log(respone)
-                        if (respone.status == 200) {
-
-                            data = respone.data;
+                        if (respone.code == 200) {
+                            data = respone;
                         } else {
-                            alter("无记录")
+                            alert("系统错误")
                         }
                     }
 
                 });
-                if (data != null) {
+                if (data.extend.pageInfo.list!= null) {
                     /*渲染数据*/
+                    var str = this.sId+this.sGroup+this.sEntryTime+0;
+                    if(str!=0)
                     this.renderData(data);
+                    else
+                        this.upDagitteStudentList(1);
                 } else {
+                    alert("无记录")
                     console.log(5555)
                 }
 
@@ -497,7 +508,7 @@
                         $("#myModal").modal({backdrop: 'static', keyboard: false});
                         $("#myModal").modal("hide")
                     } else {
-                        alter("修改失败")
+                        alert("修改失败")
                     }
 
                 })

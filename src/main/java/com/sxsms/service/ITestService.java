@@ -9,4 +9,5 @@ public interface ITestService {
     public int  modifyStu(StuInfo stu);
     public int deleteStu (Integer key);
     public int addStu(StuInfo stu);
+    public List <StuInfo> getStuByFactors(StuInfo stu);
 }
